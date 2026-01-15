@@ -1,0 +1,7 @@
+{
+  "name": "Medgenius",
+  "description": "A medical study application acting as a Headless CMS viewer for Notion, featuring an interactive flashcard system for active recall.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
