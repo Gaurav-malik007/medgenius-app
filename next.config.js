@@ -1,13 +1,9 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['react-notion-x', 'notion-client', 'notion-utils'],
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'www.notion.so' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'picsum.photos' }
-    ],
+    domains: ['www.notion.so', 'images.unsplash.com', 's3.us-west-2.amazonaws.com'],
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
