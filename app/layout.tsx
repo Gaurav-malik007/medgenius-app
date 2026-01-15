@@ -1,4 +1,4 @@
-import './globals.css' // <--- This line fixes the styling!
+import './globals.css' // <--- This is the magic line that loads your design!
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
