@@ -1,73 +1,60 @@
-export const dynamic = 'force-dynamic';
-import Link from 'next/link';
-import { Search, Plus, Sparkles, Clock, ChevronRight } from 'lucide-react';
-import { getAllChapters } from '@/lib/notion';
+import Link from 'next/link'
+import { getDatabase } from '@/lib/notion'
 
-export default async function Dashboard() {
-  const chapters = await getAllChapters();
+// This line forces the page to load fresh data every time (Fixes build errors)
+export const dynamic = 'force-dynamic'
+
+export default async function Home() {
+  let chapters = []
+  
+  try {
+    const libraryId = process.env.NOTION_LIBRARY_ID
+    if (libraryId) {
+      chapters = await getDatabase(libraryId)
+    }
+  } catch (error) {
+    console.error("Failed to fetch chapters:", error)
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <section className="mb-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
-          <div>
-            <div className="flex items-center gap-2 text-teal-600 font-bold text-xs uppercase tracking-widest mb-3">
-              <Sparkles className="w-4 h-4" />
-              Notion Library
-            </div>
-            <h1 className="text-5xl font-serif font-extrabold text-slate-900 leading-tight">Curriculum</h1>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search medical chapters..."
-                className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none transition-all w-full md:w-80 shadow-sm font-medium"
-              />
-            </div>
-            <button className="bg-teal-600 hover:bg-teal-700 text-white p-3.5 rounded-2xl shadow-xl shadow-teal-600/20 transition-all active:scale-95">
-              <Plus className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
+    <main className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-12 text-center">
+          <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">
+            MEDGENIUS
+          </h1>
+          <p className="text-slate-500 text-lg">Your Medical External Brain</p>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {chapters.map((chapter) => (
-            <Link 
-              href={`/chapter/${chapter.id}`} 
-              key={chapter.id}
-              className="group bg-white rounded-[2.5rem] overflow-hidden border border-slate-200/60 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
-            >
-              <div className="h-52 relative overflow-hidden">
-                <img 
-                  src={chapter.coverImage} 
-                  alt={chapter.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                />
-                <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-xl shadow-sm">
-                  <span className="text-[10px] font-black text-teal-700 uppercase tracking-widest">{chapter.category}</span>
-                </div>
-              </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-teal-700 transition-colors">{chapter.title}</h3>
-                <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed mb-6">{chapter.description}</p>
-                
-                <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                  <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-wider">
-                    <Clock className="w-3.5 h-3.5" />
-                    {chapter.lastRead}
-                  </div>
-                  <div className="flex items-center gap-1 text-teal-600 text-sm font-black group-hover:gap-3 transition-all uppercase tracking-tighter">
-                    Study <ChevronRight className="w-4 h-4" />
+        <div className="grid gap-4">
+          {chapters.length === 0 ? (
+             <div className="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+               {process.env.NOTION_LIBRARY_ID ? "No chapters found. Check your Library ID." : "Library ID missing in Vercel."}
+             </div>
+          ) : (
+            chapters.map((chapter: any) => (
+              <Link 
+                key={chapter.id} 
+                href={`/chapter/${chapter.id}`}
+                className="block group"
+              >
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-400 transition-all">
+                  <h2 className="text-xl font-bold text-slate-800 group-hover:text-blue-600">
+                    {chapter.properties?.Name?.title?.[0]?.plain_text || "Untitled Chapter"}
+                  </h2>
+                  <div className="flex gap-2 mt-3">
+                    {chapter.properties?.Tags?.multi_select?.map((tag: any) => (
+                      <span key={tag.id} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-md uppercase">
+                        {tag.name}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
-      </section>
-    </div>
-  );
+      </div>
+    </main>
+  )
 }
