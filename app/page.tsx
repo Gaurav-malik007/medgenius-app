@@ -1,4 +1,4 @@
-
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { Search, Plus, Sparkles, Clock, ChevronRight } from 'lucide-react';
 import { getAllChapters } from '@/lib/notion';
