@@ -1,33 +1,38 @@
-import { NotionRenderer } from 'react-notion-x'
-import { notion } from '@/lib/notion' // Use the shared client
+import dynamic from 'next/dynamic'
+import { notion } from '@/lib/notion'
 import FlashcardDeck from '@/components/FlashcardDeck'
 
-// 1. DISABLING CACHE is the key to fixing the Vercel Build Error
-export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store'
+// 1. LAZY LOAD the Reader (This bypasses the Vercel Build Error)
+const NotionReader = dynamic(() => import('@/components/NotionReader'), {
+  ssr: false, // strictly client-side only
+})
+
+// 2. Force Dynamic Mode
+export const dynamicParams = true
+export const revalidate = 0
 
 export default async function ChapterPage({ params }: { params: { id: string } }) {
   let recordMap = null
 
   try {
-    // Safety Check: If ID is missing or weird during build, skip fetch
-    if (!params?.id || params.id === 'undefined') {
-         return null
+    // Safety check for the ID
+    if (params.id && params.id !== 'undefined') {
+        recordMap = await notion.getPage(params.id)
     }
-    recordMap = await notion.getPage(params.id)
   } catch (error) {
-    console.error("Build safety catch:", error)
-    // If fetch fails, we just render a simple error message instead of crashing the build
-    return (
-        <div className="p-12 text-center text-red-500">
-            Unable to load chapter. Please check Notion permissions.
-        </div>
-    )
+    console.error("Page Load Error:", error)
   }
 
-  if (!recordMap) return null
+  // If no data, show a simple error but DON'T crash
+  if (!recordMap) {
+      return (
+          <div className="min-h-screen flex items-center justify-center text-slate-400">
+              Loading chapter... (or check Notion permissions)
+          </div>
+      )
+  }
 
-  // Mock Questions for now to ensure stability
+  // Mock questions for stability
   const questions: any[] = []
 
   return (
@@ -39,12 +44,8 @@ export default async function ChapterPage({ params }: { params: { id: string } }
       </nav>
 
       <main className="max-w-4xl mx-auto px-4 py-12">
-        <NotionRenderer 
-          recordMap={recordMap} 
-          fullPage={true} 
-          darkMode={false}
-          disableHeader={true}
-        />
+        {/* The Reader is now isolated and won't crash the server build */}
+        <NotionReader recordMap={recordMap} />
       </main>
 
       {questions.length > 0 && (
