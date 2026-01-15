@@ -1,4 +1,4 @@
-import './globals.css' // <--- This is the magic line that loads your design!
+import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'MedGenius',
-  description: 'Medical External Brain',
+  description: 'Your Medical External Brain',
 }
 
 export default function RootLayout({
